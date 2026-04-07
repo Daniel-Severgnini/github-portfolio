@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { useGithubData } from '../hooks/useGithubData';
 import { useRankingRPG } from '../hooks/useRankingRPG';
@@ -13,10 +13,24 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ customData, customFavorites, 
   const { user, repos, languagesData, loading, error, mainLanguage, percentage } = useGithubData('Daniel-Severgnini');
   const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [timelineVisible, setTimelineVisible] = useState(false);
+  const timelineRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => setTimelineVisible(true), 140);
-    return () => window.clearTimeout(timeout);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimelineVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.25 }
+    );
+
+    if (timelineRef.current) {
+      observer.observe(timelineRef.current);
+    }
+
+    return () => observer.disconnect();
   }, []);
 
   // Chamar hooks ANTES de qualquer return (regra dos hooks)
@@ -182,7 +196,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ customData, customFavorites, 
       </div>
 
       {/* Timeline de Carreira */}
-      <div className={`mb-6 rounded-[2.5rem] border border-violet-500/20 bg-gradient-to-br from-slate-950 via-violet-950 to-slate-900 p-6 shadow-[0_30px_80px_rgba(124,58,237,0.25)] text-white transition-all duration-700 ${timelineVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+      <div ref={timelineRef} className={`mb-6 rounded-[2.5rem] border border-violet-500/20 bg-gradient-to-br from-slate-950 via-violet-950 to-slate-900 p-6 shadow-[0_30px_80px_rgba(124,58,237,0.25)] text-white transition-all duration-700 ${timelineVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-3xl font-extrabold tracking-tight text-white">🧾 Timeline de Carreira</h3>
@@ -192,7 +206,9 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ customData, customFavorites, 
         </div>
 
         <div className="relative">
-          <div className="absolute inset-x-0 top-16 h-px bg-white/10 md:top-24"></div>
+          <div className="absolute inset-x-0 top-16 h-px bg-white/10 md:top-24">
+            <div className={`h-full bg-gradient-to-r from-cyan-400 via-violet-400 to-pink-400 transition-all duration-1000 ${timelineVisible ? 'w-full' : 'w-0'} origin-left`}></div>
+          </div>
           <div className="flex flex-col gap-5 md:flex-row md:justify-between md:items-start">
             <div className="group relative md:w-[32%] rounded-3xl bg-white/5 p-5 ring-1 ring-white/10 transition-transform duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl">
               <div className="absolute left-1/2 -top-6 -translate-x-1/2 md:left-[-2.5rem] md:top-6 md:translate-x-0 h-14 w-14 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-2xl shadow-cyan-500/30 flex items-center justify-center text-xl">
