@@ -16,21 +16,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ customData, customFavorites, 
   const timelineRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setTimelineVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.25 }
-    );
-
-    if (timelineRef.current) {
-      observer.observe(timelineRef.current);
-    }
-
-    return () => observer.disconnect();
+    const timeout = window.setTimeout(() => setTimelineVisible(true), 500);
+    return () => window.clearTimeout(timeout);
   }, []);
 
   // Chamar hooks ANTES de qualquer return (regra dos hooks)

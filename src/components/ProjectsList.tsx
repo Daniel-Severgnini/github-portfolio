@@ -58,6 +58,13 @@ const ProjectsList: React.FC<{ repos: any[]; loading?: boolean; customFavorites?
     );
   };
 
+  // Separar projetos em destaque baseado nos filtrados
+  const featuredRepos = useMemo(() => {
+    return filteredRepos.filter(repo =>
+      (customFavorites || ['lista-de-contatos', 'Landing-Page', 'Loja_Ve-culos']).includes(repo.name)
+    );
+  }, [filteredRepos, customFavorites]);
+
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
@@ -71,11 +78,6 @@ const ProjectsList: React.FC<{ repos: any[]; loading?: boolean; customFavorites?
   if (!repos || repos.length === 0) {
     return <p className="text-center text-slate-500 dark:text-slate-400 mt-6">Nenhum projeto encontrado.</p>;
   }
-
-  // Separar projetos em destaque baseado nos filtrados
-  const featuredRepos = filteredRepos.filter(repo =>
-    (customFavorites || ['lista-de-contatos', 'Landing-Page', 'Loja_Ve-culos']).includes(repo.name)
-  );
 
   return (
     <div className="mt-12 space-y-8">
@@ -211,7 +213,7 @@ const ProjectsList: React.FC<{ repos: any[]; loading?: boolean; customFavorites?
                         <span className="font-medium">{new Date(repo.updated_at).toLocaleDateString('pt-BR')}</span>
                       </span>
                     </div>
-                    <div className="flex gap-4 items-center">
+                    <div className="flex gap-4">
                       <span className="flex items-center gap-1.5">
                         <span className="text-yellow-500">⭐</span>
                         <span className="font-semibold text-yellow-600 dark:text-yellow-400">{repo.stargazers_count || repo.stars || 0}</span>
@@ -220,18 +222,6 @@ const ProjectsList: React.FC<{ repos: any[]; loading?: boolean; customFavorites?
                         <span className="text-green-500">🍴</span>
                         <span className="font-semibold text-green-600 dark:text-green-400">{repo.forks_count || repo.forks || 0}</span>
                       </span>
-                      {onEditProject && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEditProject(repo.name);
-                          }}
-                          className="px-3 py-1.5 bg-indigo-500 text-white text-xs rounded-lg hover:bg-indigo-600 transition-colors font-medium shadow-sm"
-                          title="Editar projeto"
-                        >
-                          ✏️ Editar
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
