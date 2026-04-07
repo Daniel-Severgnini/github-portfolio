@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import ProjectModal from './ProjectModal';
 import { useProjectMetadata } from '../hooks/useProjectMetadata';
 
-const ProjectsList: React.FC<{ repos: any[]; loading?: boolean; customFavorites?: string[] }> = ({ repos, loading, customFavorites }) => {
+const ProjectsList: React.FC<{ repos: any[]; loading?: boolean; customFavorites?: string[]; onEditProject?: (projectName: string) => void }> = ({ repos, loading, customFavorites, onEditProject }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedProject, setSelectedProject] = useState<any>(null);
@@ -211,7 +211,7 @@ const ProjectsList: React.FC<{ repos: any[]; loading?: boolean; customFavorites?
                         <span className="font-medium">{new Date(repo.updated_at).toLocaleDateString('pt-BR')}</span>
                       </span>
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 items-center">
                       <span className="flex items-center gap-1.5">
                         <span className="text-yellow-500">⭐</span>
                         <span className="font-semibold text-yellow-600 dark:text-yellow-400">{repo.stargazers_count || repo.stars || 0}</span>
@@ -220,6 +220,18 @@ const ProjectsList: React.FC<{ repos: any[]; loading?: boolean; customFavorites?
                         <span className="text-green-500">🍴</span>
                         <span className="font-semibold text-green-600 dark:text-green-400">{repo.forks_count || repo.forks || 0}</span>
                       </span>
+                      {onEditProject && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditProject(repo.name);
+                          }}
+                          className="px-3 py-1.5 bg-indigo-500 text-white text-xs rounded-lg hover:bg-indigo-600 transition-colors font-medium shadow-sm"
+                          title="Editar projeto"
+                        >
+                          ✏️ Editar
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

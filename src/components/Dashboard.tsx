@@ -7,9 +7,10 @@ interface DashboardProps {
   repos: any[];
   onUpdateProfile: (data: any) => void;
   onUpdateFavorites: (favorites: string[]) => void;
+  projectToEdit?: string | null;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onClose, repos, onUpdateProfile, onUpdateFavorites }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onClose, repos, onUpdateProfile, onUpdateFavorites, projectToEdit }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'profile' | 'projects'>('profile');
@@ -50,6 +51,26 @@ const Dashboard: React.FC<DashboardProps> = ({ onClose, repos, onUpdateProfile, 
       setIsAuthenticated(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (projectToEdit && isAuthenticated) {
+      const project = repos.find(r => r.name === projectToEdit);
+      const existingMetadata = metadata[projectToEdit];
+
+      setEditingProject(project);
+      setEditFormData({
+        name: projectToEdit,
+        url: project?.url || '',
+        descriptionExpanded: existingMetadata?.descriptionExpanded || project?.description || '',
+        whatSolves: existingMetadata?.whatSolves || '',
+        technicalDifferential: existingMetadata?.technicalDifferential || '',
+        technologies: existingMetadata?.technologies || (project?.language ? [project.language] : []),
+        videoUrl: existingMetadata?.videoUrl || '',
+      });
+      setShowEditForm(true);
+      setActiveTab('projects');
+    }
+  }, [projectToEdit, isAuthenticated, repos, metadata]);
 
   const handleLogin = () => {
     if (password === 'admin123') {
@@ -444,7 +465,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onClose, repos, onUpdateProfile, 
                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
                   <span className="text-lg">🎬</span> Adicionar Vídeo/GIF do Projeto
                 </label>
-                
+
                 {/* Área Principal: Upload ou URL */}
                 {!filePreview && !editFormData.videoUrl && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

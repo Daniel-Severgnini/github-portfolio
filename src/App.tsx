@@ -19,6 +19,13 @@ const App: React.FC = () => {
     setCustomFavorites(favorites);
   };
 
+  const [projectToEdit, setProjectToEdit] = useState<string | null>(null);
+
+  const handleEditProject = (projectName: string) => {
+    setProjectToEdit(projectName);
+    setShowDashboard(true);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300 pb-20">
       <Header />
@@ -45,7 +52,7 @@ const App: React.FC = () => {
                <span className="w-2 h-8 bg-indigo-500 rounded-full block"></span>
                Projetos Recentes
              </h3>
-             <ProjectsList repos={repos} loading={loading} customFavorites={customFavorites} />
+             <ProjectsList repos={repos} loading={loading} customFavorites={customFavorites} onEditProject={handleEditProject} />
           </div>
 
           {/* Seção: Tecnologias */}
@@ -79,10 +86,14 @@ const App: React.FC = () => {
 
       {showDashboard && (
         <Dashboard
-          onClose={() => setShowDashboard(false)}
+          onClose={() => {
+            setShowDashboard(false);
+            setProjectToEdit(null);
+          }}
           repos={repos}
           onUpdateProfile={handleUpdateProfile}
           onUpdateFavorites={handleUpdateFavorites}
+          projectToEdit={projectToEdit}
         />
       )}
     </div>
