@@ -34,6 +34,7 @@ const ADMIN_TOKEN_KEY = 'portfolio_admin_token';
 const JSON_HEADERS = {
   'Content-Type': 'application/json',
 };
+const REQUEST_TIMEOUT_MS = 12000;
 
 const getResponsePayload = async (response: Response) => {
   try {
@@ -49,6 +50,8 @@ const request = async <T>(
   requiresAuth = false
 ): Promise<T> => {
   const headers = new Headers(init.headers || {});
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   if (requiresAuth) {
     const token = getAdminToken();
@@ -58,18 +61,36 @@ const request = async <T>(
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(input, {
-    ...init,
-    headers,
-  });
+  try {
+    const response = await fetch(input, {
+      ...init,
+      headers,
+      signal: controller.signal,
+    });
 
-  const payload = await getResponsePayload(response);
-  if (!response.ok) {
-    const message = payload?.error || 'Falha ao processar requisicao.';
-    throw new Error(message);
+    const contentType = response.headers.get('content-type') || '';
+    const isHtmlResponse = contentType.includes('text/html');
+    const payload = await getResponsePayload(response);
+
+    // API endpoints should always answer JSON. HTML means routing/protection issue.
+    if (isHtmlResponse) {
+      throw new Error('Resposta invalida da API (HTML). Recarregue a pagina e tente novamente.');
+    }
+
+    if (!response.ok) {
+      const message = payload?.error || 'Falha ao processar requisicao.';
+      throw new Error(message);
+    }
+
+    return payload as T;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error('Tempo limite da requisicao. Tente novamente.');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  return payload as T;
 };
 
 export const getAdminToken = (): string | null => {

@@ -104,6 +104,13 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   useEffect(() => {
     let mounted = true;
+    const safetyTimer = window.setTimeout(() => {
+      if (!mounted) return;
+      clearAdminToken();
+      setIsAuthenticated(false);
+      setAuthError('Tempo de verificacao excedido. Entre novamente.');
+      setIsBootstrapping(false);
+    }, 15000);
 
     const bootstrapAuth = async () => {
       try {
@@ -118,6 +125,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         if (!mounted) return;
         setIsAuthenticated(false);
       } finally {
+        window.clearTimeout(safetyTimer);
         if (mounted) {
           setIsBootstrapping(false);
         }
@@ -128,6 +136,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
     return () => {
       mounted = false;
+      window.clearTimeout(safetyTimer);
     };
   }, [refreshAdminState, reload]);
 
