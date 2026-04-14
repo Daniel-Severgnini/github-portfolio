@@ -118,8 +118,14 @@ const Dashboard: React.FC<DashboardProps> = ({
         if (!mounted) return;
 
         setIsAuthenticated(true);
-        await refreshAdminState();
-        await reload();
+        setIsBootstrapping(false);
+
+        try {
+          await refreshAdminState();
+          await reload();
+        } catch (error) {
+          // Keep dashboard open even if state sync fails; user can retry actions manually.
+        }
       } catch (error) {
         clearAdminToken();
         if (!mounted) return;
