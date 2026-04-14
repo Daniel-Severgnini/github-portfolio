@@ -89,7 +89,7 @@ export const clearAdminToken = () => {
 
 export const loginDashboard = async (password: string): Promise<LoginResponse> => {
   const payload = await request<{ token: string; expiresAt: number }>(
-    '/api/auth/login',
+    '/api/auth/login.js',
     {
       method: 'POST',
       headers: JSON_HEADERS,
@@ -104,7 +104,7 @@ export const loginDashboard = async (password: string): Promise<LoginResponse> =
 
 export const verifyDashboardSession = async () => {
   const payload = await request<{ valid: boolean; expiresAt: number; role: string }>(
-    '/api/auth/verify',
+    '/api/auth/verify.js',
     { method: 'GET' },
     true
   );
@@ -113,7 +113,7 @@ export const verifyDashboardSession = async () => {
 
 export const fetchPublicPortfolioState = async (): Promise<PortfolioPublishedState> => {
   const payload = await request<{ published: PortfolioPublishedState }>(
-    '/api/portfolio/state',
+    '/api/portfolio/state.js',
     { method: 'GET' },
     false
   );
@@ -123,7 +123,7 @@ export const fetchPublicPortfolioState = async (): Promise<PortfolioPublishedSta
 
 export const fetchAdminPortfolioState = async (): Promise<PortfolioAdminState> => {
   const payload = await request<{ state: PortfolioAdminState }>(
-    '/api/admin/state',
+    '/api/admin/state.js',
     { method: 'GET' },
     true
   );
@@ -138,7 +138,7 @@ export const saveDraftState = async (draftPatch: {
   data?: Partial<ProjectMetadata>;
 }): Promise<PortfolioAdminState> => {
   const payload = await request<{ state: PortfolioAdminState }>(
-    '/api/admin/draft',
+    '/api/admin/draft.js',
     {
       method: 'POST',
       headers: JSON_HEADERS,
@@ -155,7 +155,7 @@ export const publishDraftState = async (publishPayload: {
   note?: string;
 } = {}): Promise<PortfolioAdminState> => {
   const payload = await request<{ state: PortfolioAdminState }>(
-    '/api/admin/publish',
+    '/api/admin/publish.js',
     {
       method: 'POST',
       headers: JSON_HEADERS,
@@ -171,7 +171,7 @@ export const discardDraftState = async (discardPayload: {
   projectName?: string;
 } = {}): Promise<PortfolioAdminState> => {
   const payload = await request<{ state: PortfolioAdminState }>(
-    '/api/admin/discard',
+    '/api/admin/discard.js',
     {
       method: 'POST',
       headers: JSON_HEADERS,
@@ -184,7 +184,7 @@ export const discardDraftState = async (discardPayload: {
 
 export const rollbackPublishedState = async (snapshotId: string): Promise<PortfolioAdminState> => {
   const payload = await request<{ state: PortfolioAdminState }>(
-    '/api/admin/rollback',
+    '/api/admin/rollback.js',
     {
       method: 'POST',
       headers: JSON_HEADERS,
