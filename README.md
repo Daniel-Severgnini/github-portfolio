@@ -183,3 +183,22 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 ---
 
 ⭐ **Dê uma estrela se gostou do projeto!**
+
+## Backend do Dashboard (novo)
+
+Agora o projeto usa API serverless na Vercel para:
+- Autenticacao do dashboard com token assinado no backend
+- Persistencia de rascunhos/publicacoes no Redis (Upstash)
+- Historico de publicacoes com rollback
+
+Variaveis de ambiente necessarias na Vercel:
+
+- DASHBOARD_PASSWORD=181547615
+- AUTH_TOKEN_SECRET=troque-por-um-segredo-forte
+- KV_REST_API_URL=...
+- KV_REST_API_TOKEN=...
+
+Observacoes:
+- O frontend continua com `REACT_APP_GITHUB_TOKEN` opcional para melhorar limite da API do GitHub.
+- Para o backend funcionar em producao, conecte um Redis via Vercel Marketplace (Upstash Redis).
+- Rotas novas: `/api/auth/*`, `/api/admin/*`, `/api/portfolio/state`.
