@@ -8,6 +8,7 @@ const MAX_ATTEMPTS = 5;
 const LOCK_SECONDS = 10 * 60;
 
 const memoryAttempts = new Map();
+const EMPTY_ATTEMPT_STATE = { attempts: 0, lockUntil: 0 };
 
 const getDashboardPassword = () => {
   return process.env.DASHBOARD_PASSWORD || process.env.REACT_APP_DASHBOARD_PASSWORD || '181547615';
@@ -108,18 +109,18 @@ const readAttemptState = async (ip) => {
   const key = getAttemptKey(ip);
 
   if (redis) {
-    const raw = await redis.get(key);
-    if (!raw) return { attempts: 0, lockUntil: 0 };
-
     try {
+      const raw = await redis.get(key);
+      if (!raw) return EMPTY_ATTEMPT_STATE;
+
       if (typeof raw === 'string') return JSON.parse(raw);
       return raw;
     } catch (error) {
-      return { attempts: 0, lockUntil: 0 };
+      return memoryAttempts.get(key) || EMPTY_ATTEMPT_STATE;
     }
   }
 
-  return memoryAttempts.get(key) || { attempts: 0, lockUntil: 0 };
+  return memoryAttempts.get(key) || EMPTY_ATTEMPT_STATE;
 };
 
 const writeAttemptState = async (ip, state) => {
@@ -127,9 +128,13 @@ const writeAttemptState = async (ip, state) => {
   const key = getAttemptKey(ip);
 
   if (redis) {
-    const ttl = state.lockUntil > Date.now() ? LOCK_SECONDS : 60 * 60;
-    await redis.set(key, JSON.stringify(state), { ex: ttl });
-    return;
+    try {
+      const ttl = state.lockUntil > Date.now() ? LOCK_SECONDS : 60 * 60;
+      await redis.set(key, JSON.stringify(state), { ex: ttl });
+      return;
+    } catch (error) {
+      // Fallback in-memory when Redis is unavailable or misconfigured.
+    }
   }
 
   memoryAttempts.set(key, state);
@@ -140,8 +145,12 @@ const clearAttemptState = async (ip) => {
   const key = getAttemptKey(ip);
 
   if (redis) {
-    await redis.del(key);
-    return;
+    try {
+      await redis.del(key);
+      return;
+    } catch (error) {
+      // Fallback in-memory when Redis is unavailable or misconfigured.
+    }
   }
 
   memoryAttempts.delete(key);

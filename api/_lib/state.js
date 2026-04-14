@@ -54,20 +54,18 @@ const readState = async () => {
   const redis = getRedis();
 
   if (redis) {
-    const raw = await redis.get(STATE_KEY);
-    if (!raw) {
-      const initial = createDefaultState();
-      await redis.set(STATE_KEY, JSON.stringify(initial));
-      return initial;
-    }
-
     try {
+      const raw = await redis.get(STATE_KEY);
+      if (!raw) {
+        const initial = createDefaultState();
+        await redis.set(STATE_KEY, JSON.stringify(initial));
+        return initial;
+      }
+
       const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
       return normalizeState(parsed);
     } catch (error) {
-      const initial = createDefaultState();
-      await redis.set(STATE_KEY, JSON.stringify(initial));
-      return initial;
+      // Fallback to in-memory state when Redis is unavailable or misconfigured.
     }
   }
 
@@ -80,8 +78,12 @@ const writeState = async (state) => {
   const redis = getRedis();
 
   if (redis) {
-    await redis.set(STATE_KEY, JSON.stringify(normalized));
-    return normalized;
+    try {
+      await redis.set(STATE_KEY, JSON.stringify(normalized));
+      return normalized;
+    } catch (error) {
+      // Fallback to in-memory state when Redis is unavailable or misconfigured.
+    }
   }
 
   inMemoryState = normalized;
