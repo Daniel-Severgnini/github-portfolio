@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Header from './components/Header';
 import ProfileCard from './components/ProfileCard';
 import ProjectsList from './components/ProjectsList';
@@ -132,13 +132,23 @@ const App: React.FC = () => {
     navigateTo('/');
   };
 
-  const handleUpdateProfile = (data: ProfileData) => {
-    setCustomProfileData(data);
-  };
+  const handleUpdateProfile = useCallback((data: ProfileData) => {
+    setCustomProfileData((current) => {
+      if (JSON.stringify(current) === JSON.stringify(data)) {
+        return current;
+      }
+      return data;
+    });
+  }, []);
 
-  const handleUpdateFavorites = (favorites: string[]) => {
-    setCustomFavorites(favorites);
-  };
+  const handleUpdateFavorites = useCallback((favorites: string[]) => {
+    setCustomFavorites((current) => {
+      if (JSON.stringify(current) === JSON.stringify(favorites)) {
+        return current;
+      }
+      return favorites;
+    });
+  }, []);
 
   const isDashboardRoute = pathname === '/admin';
 
